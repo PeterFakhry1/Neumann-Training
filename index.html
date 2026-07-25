@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Makes the website responsive on mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Neumann Training</title>
+
+    <!-- Connect HTML to CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Font required by the PDF: Mulish -->
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- This appears first when the page loads -->
+    <div id="loader">
+        <h1 class="logo">implify</h1>
+        <p>Making Information Simple, Tangible and Beautiful.</p>
+        <span>Loading... please wait</span>
+    </div>
+
+    <div id="login-page" class="hidden">
+        <div class="login-box">
+           <h1>Login</h1>
+
+           <form id="login-form">
+               <input type="text" id="login-username" placeholder="Username">
+               <input type="password" id="login-password" placeholder="Password">
+               <button type="submit">Login</button>
+            </form>
+            <p id="login-error"></p>
+        </div>
+    </div>
+
+    <!-- This is the real app, hidden at first -->
+    <div id="app" class="hidden">
+
+        <!-- Top header -->
+        <header>
+            <div class="top-color-line"></div>
+
+            <div class="header-content">
+                <h1 class="logo">implify</h1>
+
+                <nav>
+                    <a href="#">About Us</a>
+                    <a href="#">Our Products</a>
+                    <a href="#">Our Services</a>
+                    <a href="#">Contact Us</a>
+                </nav>
+
+                <button id="add-user-btn" class="add-user-btn"> Add User </button>
+
+                <button id="menu-btn" class="menu-btn">☰</button>
+
+            </div>
+        </header>
+
+        <!-- Main page content -->
+        <main>
+
+            <!-- JavaScript will put the employee cards here -->
+           <div class="users-area">
+        <div class="filter-area">
+          <h3>Filter Company : </h3>
+
+           <label>
+           <input type="checkbox" class="company-filter" value="Benton">Benton</label>
+           <label>
+           <input type="checkbox" class="company-filter" value="Chanay">Chanay</label>
+           <label>
+           <input type="checkbox" class="company-filter" value="Chemel">Chemel</label>
+           <label>
+           <input type="checkbox" class="company-filter" value="Feltz Printing">Feltz Printing</label>
+           <label>
+           <input type="checkbox" class="company-filter" value="Commercial Press">Commercial Press</label>
+
+           </div>
+
+
+            <section id="users-list" class="users-list"></section>
+
+            <div>
+
+            <button id="show-more-btn" class="show-more-btn">Show More ↓   </button>
+            <span id="separator">    |    </span> 
+            <button id="show-less-btn" class="show-less-btn">   Show Less ↑</button> 
+            </div>
+            </div>
+
+            <!-- Details panel opens here when we click a user -->
+            <section id="details-panel" class="details-panel">
+                <button id="close-details" class="close-bt">x</button>
+                <div id="details-content"></div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Connect HTML to JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
