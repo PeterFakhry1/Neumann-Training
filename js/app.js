@@ -326,6 +326,6 @@ loginForm.addEventListener("submit", function(event) {
         loginError.textContent = "Invalid username or password.";
     }
 });
-setTimeout(showLogin, 1000);
+setTimeout(showLogin, 800);
 //loadUsers();
 //setTimeout(showApp, 1500);
