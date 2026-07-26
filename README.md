@@ -59,7 +59,7 @@ Open `backend/app.py` and replace:
 password="YOUR_MYSQL_PASSWORD"
 ```
 
-with your own MySQL password.
+with your own MySQL password, at line 12.
 
 Run the backend:
 
