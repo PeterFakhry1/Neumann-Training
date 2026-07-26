@@ -185,7 +185,7 @@ function openAddUserForm() {
 
      const addUserForm = document.getElementById("add-user-form");
 
-addUserForm.addEventListener("submit", function(event) {
+ addUserForm.addEventListener("submit", function(event) {
     event.preventDefault();
 
     const newUser = {
@@ -208,11 +208,19 @@ else if (newUser.company=="") {
     alert("Please enter your Company name");
     return;}
 
-    users.push(newUser);
-
-    displayUsers();
-
-closeDetailsPanel();
+   $.ajax({
+    url: "http://127.0.0.1:5000/users",
+    method: "POST",
+    contentType: "application/json",
+    data: JSON.stringify(newUser),
+    success: function() {
+        loadUsers();
+        closeDetailsPanel();
+    },
+    error: function() {
+        alert("Could not add user.");
+    }
+});
 });
 }
 
@@ -244,28 +252,43 @@ function openEditUserForm(user) {
     editUserForm.addEventListener("submit", function(event) {
         event.preventDefault();
 
-        user.fname = document.getElementById("edit-fname").value;
-        user.lname = document.getElementById("edit-lname").value;
-        user.company = document.getElementById("edit-company").value;
-        user.address = document.getElementById("edit-address").value;
-        user.city = document.getElementById("edit-city").value;
-        user.county = document.getElementById("edit-county").value;
-        user.color = document.getElementById("edit-color").value;
+        const updatedUser = {
+        fname: document.getElementById("edit-fname").value,
+        lname: document.getElementById("edit-lname").value,
+        company: document.getElementById("edit-company").value,
+        address: document.getElementById("edit-address").value,
+        city: document.getElementById("edit-city").value,
+        county: document.getElementById("edit-county").value,
+        color: document.getElementById("edit-color").value,
+        photo: user.photo
+    };
 
-        if (user.fname === "") {
+        if (updatedUser.fname === "") {
             alert("Please enter the first name");
             return;
-        } else if (user.lname === "") {
+        } else if (updatedUser.lname === "") {
             alert("Please enter the last name");
             return;
-        } else if (user.company === "") {
+        } else if (updatedUser.company === "") {
             alert("Please enter the company name");
             return;
         }
 
-        displayUsers();
-        openDetails(user);
+        $.ajax({
+            url:`http://127.0.0.1:5000/users/${user.id}`,
+        method: "PUT",
+        contentType: "application/json",
+        data: JSON.stringify(updatedUser),
+        success: function() {
+            loadUsers();
+            closeDetailsPanel();
+        },
+        error: function() {
+            alert("Could not update user.");
+        }
     });
+        });
+    
 } 
 
 addUserBtn.addEventListener("click", openAddUserForm);

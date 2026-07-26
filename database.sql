@@ -33,3 +33,5 @@ VALUES
 ('Kiley', 'Caldarera', 'Chemel', '25 E 75th St', 'Los Angeles', 'Los Angeles', '#1473bb', 'images/default-user.png'),
 ('Bette', 'Ruta', 'Feltz Printing', '98 Connecticut Ave Nw', 'Chagrin Falls', 'Geauga', '#c32482', 'images/default-user.png'),
 ('Veronika', 'Albares', 'Commercial Press', '56 E Morehead St', 'Laredo', 'Webb', '#dde553', 'images/default-user.png');
+
+SELECT * FROM users;
