@@ -50,22 +50,29 @@ neumann_training
 Install the required Python packages:
 
 ```bash
-pip install flask flask-cors mysql-connector-python
+pip install -r requirements.txt
 ```
 
-Open `backend/app.py` and replace:
+Create a file named `.env` in the main project folder.
+
+Inside `.env`, add your MySQL password:
+
+```text
+MYSQL_PASSWORD=your_mysql_password
+```
+
+Open `backend/app.py` and make sure the password is read from the environment variable:
 
 ```python
-password="YOUR_MYSQL_PASSWORD"
+password=os.getenv("MYSQL_PASSWORD")
 ```
-
-with your own MySQL password, at line 13.
 
 Run the backend:
 
 ```bash
 python backend/app.py
 ```
+
 
 The backend runs on:
 

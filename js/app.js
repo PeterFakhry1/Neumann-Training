@@ -20,7 +20,9 @@ const addUserBtn = document.getElementById("add-user-btn");
     const loginPassword = document.getElementById("login-password");
     const loginError = document.getElementById("login-error");
 
-
+function isTooLong(value, maxLength){
+    return value.length > maxLength;
+}
 
 function showApp() {
    loginPage.style.display = "none";
@@ -152,7 +154,7 @@ function openDetails(user) {
              closeDetailsPanel();
         },
         error: function(){
-            alert("Could not load users.");
+            alert("Could not delete users.");
         }
      });
      closeDetailsPanel();
@@ -177,7 +179,7 @@ function openAddUserForm() {
             <input type="text" id="county" placeholder="County">
 
             <label for="color">Pick a Color</label>
-            <input type="color" id="color" value= "#8bc447">
+            <input type="color" id="color" value="#8bc447">
 
             <button type="submit">Add</button>
         </form>
@@ -189,13 +191,13 @@ function openAddUserForm() {
     event.preventDefault();
 
     const newUser = {
-        fname: document.getElementById("fname").value,
-        lname: document.getElementById("lname").value,
-        company: document.getElementById("company").value,
-        address: document.getElementById("address").value,
-        city: document.getElementById("city").value,
-        county: document.getElementById("county").value,
-        color: document.getElementById("color").value ,
+        fname: document.getElementById("fname").value.trim(),
+        lname: document.getElementById("lname").value.trim(),
+        company: document.getElementById("company").value.trim(),
+        address: document.getElementById("address").value.trim(),
+        city: document.getElementById("city").value.trim(),
+        county: document.getElementById("county").value.trim(),
+        color: document.getElementById("color").value.trim(),
       photo: "images/default-user.png"
     };
 if(newUser.fname =="") {
@@ -208,6 +210,25 @@ else if (newUser.company=="") {
     alert("Please enter your Company name");
     return;}
 
+if(isTooLong(newUser.fname, 35)){
+alert("First name must be 35 characters or less");
+    return;
+} else if (isTooLong(newUser.lname, 35)) {
+    alert("Last name must be 35 characters or less");
+    return;
+} else if (isTooLong(newUser.company, 40)) {
+    alert("Company name must be 40 characters or less");
+    return;
+} else if (isTooLong(newUser.address, 255)) {
+    alert("Address must be 255 characters or less");
+    return;
+} else if (isTooLong(newUser.city, 50)) {
+    alert("City must be 50 characters or less");
+    return;
+} else if (isTooLong(newUser.county, 50)) {
+    alert("County must be 50 characters or less");
+    return;
+}
    $.ajax({
     url: "http://127.0.0.1:5000/users",
     method: "POST",
@@ -253,13 +274,13 @@ function openEditUserForm(user) {
         event.preventDefault();
 
         const updatedUser = {
-        fname: document.getElementById("edit-fname").value,
-        lname: document.getElementById("edit-lname").value,
-        company: document.getElementById("edit-company").value,
-        address: document.getElementById("edit-address").value,
-        city: document.getElementById("edit-city").value,
-        county: document.getElementById("edit-county").value,
-        color: document.getElementById("edit-color").value,
+        fname: document.getElementById("edit-fname").value.trim(),
+        lname: document.getElementById("edit-lname").value.trim(),
+        company: document.getElementById("edit-company").value.trim(),
+        address: document.getElementById("edit-address").value.trim(),
+        city: document.getElementById("edit-city").value.trim(),
+        county: document.getElementById("edit-county").value.trim(),
+        color: document.getElementById("edit-color").value.trim(),
         photo: user.photo
     };
 
@@ -273,6 +294,26 @@ function openEditUserForm(user) {
             alert("Please enter the company name");
             return;
         }
+
+if(isTooLong(updatedUser.fname, 35)){
+alert("First name must be 35 characters or less");
+    return;
+} else if (isTooLong(updatedUser.lname, 35)) {
+    alert("Last name must be 35 characters or less");
+    return;
+} else if (isTooLong(updatedUser.company, 40)) {
+    alert("Company name must be 40 characters or less");
+    return;
+} else if (isTooLong(updatedUser.address, 255)) {
+    alert("Address must be 255 characters or less");
+    return;
+} else if (isTooLong(updatedUser.city, 50)) {
+    alert("City must be 50 characters or less");
+    return;
+} else if (isTooLong(updatedUser.county, 50)) {
+    alert("County must be 50 characters or less");
+    return;
+}
 
         $.ajax({
             url:`http://127.0.0.1:5000/users/${user.id}`,
