@@ -3,12 +3,24 @@ import mysql.connector
 from flask import Flask, jsonify, request
 import os
 from dotenv import load_dotenv
+from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "images", "uploads")
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_db_connection():
     return mysql.connector.connect(
@@ -119,6 +131,53 @@ def update_user(user_id):
     connection.close()
 
     return jsonify({"message": "User updated successfully"})
+
+@app.route("/upload", methods=["POST"])
+def upload_image():
+    if "photo" not in request.files:
+        return jsonify({"error": "No photo uploaded"}), 400
+
+    photo = request.files["photo"]
+
+    if photo.filename == "":
+        return jsonify({"error": "No selected file"}), 400
+
+    if photo and allowed_file(photo.filename):
+        filename = secure_filename(photo.filename)
+        save_path = os.path.join(UPLOAD_FOLDER, filename)
+        photo.save(save_path)
+
+        image_path = f"images/uploads/{filename}"
+
+        return jsonify({"photo": image_path})
+
+    return jsonify({"error": "Invalid file type"}), 400
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+
+    username = data["username"]
+    password = data["password"]
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        "SELECT * FROM admins WHERE username = %s",
+        (username,)
+    )
+
+    admin = cursor.fetchone()
+
+    cursor.close()
+    connection.close()
+
+    if admin and check_password_hash(admin["password_hash"], password):
+        return jsonify({"message": "Login successful"})
+
+    return jsonify({"message": "Invalid username or password"}), 401
+
 
 if __name__ == "__main__":
     app.run(debug=True)

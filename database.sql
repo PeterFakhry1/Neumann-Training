@@ -16,6 +16,16 @@ CREATE TABLE users (
     photo VARCHAR(255)
 );
 
+CREATE TABLE admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL
+);
+INSERT IGNORE INTO admins (username, password_hash)
+VALUES
+('admin', 'PASTE_THE_FULL_HASH_HERE');
+
+
 INSERT INTO users (fname, lname, company, address, city, county, color, photo)
 VALUES
 ('James', 'Butt', 'Benton', '6649 N Blue Gum St', 'New Orleans', 'Orleans', '#8bc447', 'images/default-user.png'),

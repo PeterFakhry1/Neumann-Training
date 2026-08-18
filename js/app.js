@@ -19,6 +19,8 @@ const addUserBtn = document.getElementById("add-user-btn");
     const loginUsername = document.getElementById("login-username");
     const loginPassword = document.getElementById("login-password");
     const loginError = document.getElementById("login-error");
+    const rememberMe = document.getElementById("remember-me");
+    const logoutBtn = document.getElementById("logout-btn");
 
 function isTooLong(value, maxLength){
     return value.length > maxLength;
@@ -31,7 +33,7 @@ function showApp() {
 }
 
 
-function loadUsers(){
+function loadUsers(showAfterLoad = false){
     $.ajax({
         url:"http://127.0.0.1:5000/users",
         method: "GET",
@@ -40,7 +42,10 @@ function loadUsers(){
         success: function(data){
             users = data;
             displayUsers();
-            setTimeout(showApp, 0);
+            if (showAfterLoad) {
+                showApp();
+            }
+           
         },
         error: function(){
             alert("could not load users Data!");
@@ -173,10 +178,20 @@ function openAddUserForm() {
         <form id="add-user-form">
             <input type="text" id="fname" placeholder="First Name">
             <input type="text" id="lname" placeholder="Last Name">
-            <input type="text" id="company" placeholder="Company">
+            <select id="company">
+              <option value="">Select Company</option>
+              <option value="Benton">Benton</option>
+              <option value="Chanay">Chanay</option>
+              <option value="Chemel">Chemel</option>
+              <option value="Feltz Printing">Feltz Printing</option>
+              <option value="Commercial Press">Commercial Press</option>
+            </select>
             <input type="text" id="address" placeholder="Address">
             <input type="text" id="city" placeholder="City">
             <input type="text" id="county" placeholder="County">
+
+            <label for="photo">User Photo</label>
+            <input type="file" id="photo" accept="image/*">
 
             <label for="color">Pick a Color</label>
             <input type="color" id="color" value="#8bc447">
@@ -229,20 +244,48 @@ alert("First name must be 35 characters or less");
     alert("County must be 50 characters or less");
     return;
 }
-   $.ajax({
-    url: "http://127.0.0.1:5000/users",
-    method: "POST",
-    contentType: "application/json",
-    data: JSON.stringify(newUser),
-    success: function() {
-        loadUsers();
-        closeDetailsPanel();
-    },
-    error: function() {
-        alert("Could not add user.");
-    }
+   const photoFile = document.getElementById("photo").files[0];
+
+if (photoFile) {
+    const formData = new FormData();
+    formData.append("photo", photoFile);
+
+    $.ajax({
+        url: "http://127.0.0.1:5000/upload",
+        method: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            newUser.photo = response.photo;
+            addUserToDatabase(newUser);
+        },
+        error: function() {
+            alert("Could not upload image.");
+        }
+    });
+} else {
+    newUser.photo = "images/default-user.png";
+    addUserToDatabase(newUser);
+}
 });
-});
+
+function addUserToDatabase(newUser) {
+    $.ajax({
+        url: "http://127.0.0.1:5000/users",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(newUser),
+        success: function() {
+            loadUsers();
+            closeDetailsPanel();
+        },
+        error: function() {
+            alert("Could not add user.");
+        }
+    });
+}
+
 }
 
 function openEditUserForm(user) {
@@ -256,7 +299,14 @@ function openEditUserForm(user) {
         <form id="edit-user-form">
             <input type="text" id="edit-fname" placeholder="First Name" value="${user.fname}">
             <input type="text" id="edit-lname" placeholder="Last Name" value="${user.lname}">
-            <input type="text" id="edit-company" placeholder="Company" value="${user.company}">
+            <select id="edit-company">
+              <option value="">Select Company</option>
+              <option value="Benton">Benton</option>
+              <option value="Chanay">Chanay</option>
+              <option value="Chemel">Chemel</option>
+              <option value="Feltz Printing">Feltz Printing</option>
+              <option value="Commercial Press">Commercial Press</option>
+            </select>
             <input type="text" id="edit-address" placeholder="Address" value="${user.address}">
             <input type="text" id="edit-city" placeholder="City" value="${user.city}">
             <input type="text" id="edit-county" placeholder="County" value="${user.county}">
@@ -269,6 +319,7 @@ function openEditUserForm(user) {
     `;
 
     const editUserForm = document.getElementById("edit-user-form");
+    document.getElementById("edit-company").value = user.company;
 
     editUserForm.addEventListener("submit", function(event) {
         event.preventDefault();
@@ -375,7 +426,13 @@ companyFilters.forEach(function(checkbox){
 });
 function showLogin() {
     loader.style.display = "none";
-    loginPage.classList.remove("hidden");
+
+    if (localStorage.getItem("isLoggedIn") === "true") {
+        loginPage.classList.add("hidden");
+        loadUsers(true);
+    } else {
+        loginPage.classList.remove("hidden");
+    }
 }
 loginForm.addEventListener("submit", function(event) {
     event.preventDefault();
@@ -383,13 +440,43 @@ loginForm.addEventListener("submit", function(event) {
     const username = loginUsername.value;
     const password = loginPassword.value;
 
-    if (username === "admin" && password === "admin") {
+   $.ajax({
+    url: "http://127.0.0.1:5000/login",
+    method: "POST",
+    contentType: "application/json",
+    data: JSON.stringify({
+        username: username,
+        password: password
+    }),
+    success: function() {
+        if (rememberMe.checked) {
+            localStorage.setItem("isLoggedIn", "true");
+        }
+
         loginPage.classList.add("hidden");
-        loadUsers();
-    } else {
+        loadUsers(true);
+    },
+    error: function() {
         loginError.textContent = "Invalid username or password.";
     }
 });
-setTimeout(showLogin, 800);
+});
+
+logoutBtn.addEventListener("click", function() {
+   localStorage.removeItem("isLoggedIn");
+    sessionStorage.removeItem("isLoggedIn");
+
+    app.classList.add("hidden");
+
+    loginPage.style.display = "flex";
+    loginPage.classList.remove("hidden");
+
+    loginUsername.value = "";
+    loginPassword.value = "";
+
+    closeDetailsPanel();
+});
+
+setTimeout(showLogin, 1200);
 //loadUsers();
 //setTimeout(showApp, 1500);
