@@ -1,18 +1,18 @@
 let users = [];
-let visibleUsers = 6;
+let currentPage = 1;
+let usersPerPage = 6;
+let totalUsers = 0;
+let selectedCompany = "";
 
-const loader = document.getElementById("loader");
-const app = document.getElementById("app");
-const usersList = document.getElementById("users-list");
-const addUserBtn = document.getElementById("add-user-btn");
-
+    const loader = document.getElementById("loader");
+    const app = document.getElementById("app");
+    const usersList = document.getElementById("users-list");
+    const addUserBtn = document.getElementById("add-user-btn");
     const detailsPanel = document.getElementById("details-panel");
     const detailsContent = document.getElementById("details-content");
     const closeDetails = document.getElementById("close-details");
     const openMenu = document.getElementById("menu-btn");
     const showMoreBtn = document.getElementById("show-more-btn");
-    const showLessBtn = document.getElementById("show-less-btn");
-    const separator = document.getElementById("separator");
     const companyFilters = document.querySelectorAll(".company-filter");
     const loginPage = document.getElementById("login-page");
     const loginForm = document.getElementById("login-form");
@@ -21,9 +21,68 @@ const addUserBtn = document.getElementById("add-user-btn");
     const loginError = document.getElementById("login-error");
     const rememberMe = document.getElementById("remember-me");
     const logoutBtn = document.getElementById("logout-btn");
+    const themeToggleBtn = document.getElementById("theme-toggle-btn");
+
+
+function showMessage(message, type = "info") {
+    const modalHeader = document.getElementById("message-modal-header");
+    const modalTitle = document.getElementById("message-modal-title");
+    const modalBody = document.getElementById("message-modal-body");
+
+    modalHeader.classList.remove("bg-primary", "bg-success", "bg-danger", "bg-warning", "text-white", "text-dark");
+
+    if (type === "success") {
+        modalHeader.classList.add("bg-success", "text-white");
+        modalTitle.textContent = "Success";
+    } else if (type === "error") {
+        modalHeader.classList.add("bg-danger", "text-white");
+        modalTitle.textContent = "Error";
+    } else if (type === "warning") {
+        modalHeader.classList.add("bg-warning", "text-dark");
+        modalTitle.textContent = "Warning";
+    } else {
+        modalHeader.classList.add("bg-primary", "text-white");
+        modalTitle.textContent = "Message";
+    }
+
+    modalBody.textContent = message;
+    $("#message-modal").modal("show");
+}
+
+function getPreferredTheme() {
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme) {
+        return savedTheme;
+    }
+
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        return "dark";
+    }
+
+    return "light";
+}
+
+function applyTheme(theme) {
+    document.body.classList.remove("light-mode", "dark-mode");
+    document.body.classList.add(theme + "-mode");
+
+    if (theme === "dark") {
+        themeToggleBtn.textContent = "Light Mode";
+    } else {
+        themeToggleBtn.textContent = "Dark Mode";
+    }
+}
+
+applyTheme(getPreferredTheme());
 
 function isTooLong(value, maxLength){
     return value.length > maxLength;
+}
+
+function isValidName(name) {
+    const namePattern = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]+$/;
+    return namePattern.test(name);
 }
 
 function showApp() {
@@ -33,32 +92,39 @@ function showApp() {
 }
 
 
-function loadUsers(showAfterLoad = false){
+function loadUsers(showAfterLoad = false, reset = true) {
+    if (reset) {
+        currentPage = 1;
+        users = [];
+    }
+
     $.ajax({
-        url:"http://127.0.0.1:5000/users",
+        url: `http://127.0.0.1:5000/users?page=${currentPage}&limit=${usersPerPage}&company=${selectedCompany}`,
         method: "GET",
         dataType: "json",
 
-        success: function(data){
-            users = data;
+        success: function(data) {
+            totalUsers = data.total;
+
+            users = users.concat(data.users);
+
             displayUsers();
+
             if (showAfterLoad) {
                 showApp();
             }
-           
         },
-        error: function(){
-            alert("could not load users Data!");
+
+        error: function() {
+            showMessage("Could not load users data.", "error");
         }
-
-
-    })
-    };
+    });
+}
 
 function displayUsers() {
     usersList.innerHTML = "";
 
-const selectedCompanies = [];
+/*  const selectedCompanies = [];
 
 companyFilters.forEach(function(checkbox) {
     if (checkbox.checked) {
@@ -72,9 +138,9 @@ if (selectedCompanies.length > 0) {
     filteredUsers = users.filter(function(user) {
         return selectedCompanies.includes(user.company);
     });
-}
-
-const usersToShow = filteredUsers.slice(0, visibleUsers);
+}    
+const usersToShow = filteredUsers;   */
+const usersToShow = users;
     usersToShow.forEach(function(user) {
         const card = document.createElement("div");
 
@@ -98,20 +164,10 @@ const usersToShow = filteredUsers.slice(0, visibleUsers);
         usersList.appendChild(card);
     });
 
-if(visibleUsers >= filteredUsers.length){
+if(users.length >= totalUsers){
     showMoreBtn.style.display = "none";
 } else {
     showMoreBtn.style.display = "inline-block";
-}
-if(visibleUsers <= 6){
-    showLessBtn.style.display = "none";
-}else {
-    showLessBtn.style.display = "inline-block";   
-}
-if(showMoreBtn.style.display === "none" || showLessBtn.style.display === "none"){
-    separator.style.display = "none";
-}else {
-    separator.style.display = "inline-block";
 }
 }
 
@@ -155,11 +211,12 @@ function openDetails(user) {
         url: `http://127.0.0.1:5000/users/${user.id}`,
         method: "Delete",
         success: function(){
-             loadUsers();
-             closeDetailsPanel();
+            showMessage("User deleted successfully.", "success");
+            loadUsers();
+            closeDetailsPanel();
         },
         error: function(){
-            alert("Could not delete users.");
+            showMessage("Could not delete users.", "error");
         }
      });
      closeDetailsPanel();
@@ -213,35 +270,43 @@ function openAddUserForm() {
         city: document.getElementById("city").value.trim(),
         county: document.getElementById("county").value.trim(),
         color: document.getElementById("color").value.trim(),
-      photo: "images/default-user.png"
+      photo: "images/default-user.svg"
     };
 if(newUser.fname =="") {
-    alert ("Please enter your First Name");
+    showMessage("Please enter your First Name", "error");
     return;}
 else if(newUser.lname == "") {
-    alert("Please enter you Last Name");
+    showMessage("Please enter you Last Name", "error");
     return;}
 else if (newUser.company=="") {
-    alert("Please enter your Company name");
+    showMessage("Please enter your Company name", "error");
     return;}
 
+    if (!isValidName(newUser.fname)) {
+    showMessage("First name must contain only letters.", "error");
+    return;
+} else if (!isValidName(newUser.lname)) {
+    showMessage("Last name must contain only letters.", "error");
+    return;
+}
+
 if(isTooLong(newUser.fname, 35)){
-alert("First name must be 35 characters or less");
+showMessage("First name must be 35 characters or less", "error");
     return;
 } else if (isTooLong(newUser.lname, 35)) {
-    alert("Last name must be 35 characters or less");
+    showMessage("Last name must be 35 characters or less", "error");
     return;
 } else if (isTooLong(newUser.company, 40)) {
-    alert("Company name must be 40 characters or less");
+    showMessage("Company name must be 40 characters or less", " error");
     return;
 } else if (isTooLong(newUser.address, 255)) {
-    alert("Address must be 255 characters or less");
+    showMessage("Address must be 255 characters or less", "error");
     return;
 } else if (isTooLong(newUser.city, 50)) {
-    alert("City must be 50 characters or less");
+    showMessage("City must be 50 characters or less", "error");
     return;
 } else if (isTooLong(newUser.county, 50)) {
-    alert("County must be 50 characters or less");
+    showMessage("County must be 50 characters or less", "error");
     return;
 }
    const photoFile = document.getElementById("photo").files[0];
@@ -261,11 +326,11 @@ if (photoFile) {
             addUserToDatabase(newUser);
         },
         error: function() {
-            alert("Could not upload image.");
+            showMessage("Could not upload image.", "error");
         }
     });
 } else {
-    newUser.photo = "images/default-user.png";
+    newUser.photo = "images/default-user.svg";
     addUserToDatabase(newUser);
 }
 });
@@ -277,11 +342,12 @@ function addUserToDatabase(newUser) {
         contentType: "application/json",
         data: JSON.stringify(newUser),
         success: function() {
+            showMessage("User added successfully.", "success");
             loadUsers();
             closeDetailsPanel();
         },
         error: function() {
-            alert("Could not add user.");
+            showMessage("Could not add user.", "error");
         }
     });
 }
@@ -295,6 +361,8 @@ function openEditUserForm(user) {
 
     detailsContent.innerHTML = `
         <h2 class="details-name" style="color: ${user.color};">Edit User</h2>
+        <img class="user-photo" src="${user.photo}" alt="${user.fname} ${user.lname}">
+
 
         <form id="edit-user-form">
             <input type="text" id="edit-fname" placeholder="First Name" value="${user.fname}">
@@ -310,6 +378,9 @@ function openEditUserForm(user) {
             <input type="text" id="edit-address" placeholder="Address" value="${user.address}">
             <input type="text" id="edit-city" placeholder="City" value="${user.city}">
             <input type="text" id="edit-county" placeholder="County" value="${user.county}">
+
+            <label for="edit-photo">Change User Photo</label>
+            <input type="file" id="edit-photo" accept="image/*">
 
             <label for="edit-color">Company Color</label>
             <input type="color" id="edit-color" value="${user.color}">
@@ -336,52 +407,87 @@ function openEditUserForm(user) {
     };
 
         if (updatedUser.fname === "") {
-            alert("Please enter the first name");
+            showMessage("Please enter the first name", "error");
             return;
         } else if (updatedUser.lname === "") {
-            alert("Please enter the last name");
+            showMessage("Please enter the last name", "error");
             return;
         } else if (updatedUser.company === "") {
-            alert("Please enter the company name");
+            showMessage("Please enter the company name", "error");
             return;
         }
 
-if(isTooLong(updatedUser.fname, 35)){
-alert("First name must be 35 characters or less");
+        if (!isValidName(updatedUser.fname)) {
+    showMessage("First name must contain only letters.", "error");
     return;
-} else if (isTooLong(updatedUser.lname, 35)) {
-    alert("Last name must be 35 characters or less");
-    return;
-} else if (isTooLong(updatedUser.company, 40)) {
-    alert("Company name must be 40 characters or less");
-    return;
-} else if (isTooLong(updatedUser.address, 255)) {
-    alert("Address must be 255 characters or less");
-    return;
-} else if (isTooLong(updatedUser.city, 50)) {
-    alert("City must be 50 characters or less");
-    return;
-} else if (isTooLong(updatedUser.county, 50)) {
-    alert("County must be 50 characters or less");
+} else if (!isValidName(updatedUser.lname)) {
+    showMessage("Last name must contain only letters.", "error");
     return;
 }
 
-        $.ajax({
-            url:`http://127.0.0.1:5000/users/${user.id}`,
+if(isTooLong(updatedUser.fname, 35)){
+showMessage("First name must be 35 characters or less", "error");
+    return;
+} else if (isTooLong(updatedUser.lname, 35)) {
+    showMessage("Last name must be 35 characters or less", "error");
+    return;
+} else if (isTooLong(updatedUser.company, 40)) {
+    showMessage("Company name must be 40 characters or less", "error");
+    return;
+} else if (isTooLong(updatedUser.address, 255)) {
+    showMessage("Address must be 255 characters or less", "error");
+    return;
+} else if (isTooLong(updatedUser.city, 50)) {
+    showMessage("City must be 50 characters or less", "error");
+    return;
+} else if (isTooLong(updatedUser.county, 50)) {
+    showMessage("County must be 50 characters or less", "error");
+    return;
+}
+
+        const photoFile = document.getElementById("edit-photo").files[0];
+
+     if (photoFile) {
+    const formData = new FormData();
+    formData.append("photo", photoFile);
+
+    $.ajax({
+        url: "http://127.0.0.1:5000/upload",
+        method: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            updatedUser.photo = response.photo;
+            updateUserInDatabase(user.id, updatedUser);
+        },
+        error: function() {
+            showMessage("Could not upload image.", "error");
+        }
+    });
+    } else 
+        {
+    updateUserInDatabase(user.id, updatedUser);
+        }
+        });
+    
+} 
+function updateUserInDatabase(userId, updatedUser) {
+    $.ajax({
+        url: `http://127.0.0.1:5000/users/${userId}`,
         method: "PUT",
         contentType: "application/json",
         data: JSON.stringify(updatedUser),
         success: function() {
+            showMessage("User updated successfully.", "success");
             loadUsers();
             closeDetailsPanel();
         },
         error: function() {
-            alert("Could not update user.");
+            showMessage("Could not update user.", "error");
         }
     });
-        });
-    
-} 
+}
 
 addUserBtn.addEventListener("click", openAddUserForm);
 
@@ -398,32 +504,30 @@ openMenu.addEventListener("click", function(){
     //i will add later
 });
 
-
 showMoreBtn.addEventListener("click", function(){
-        visibleUsers +=3;
-        if(visibleUsers > users.length){
-            visibleUsers = users.length;
-        }
-        displayUsers();
+    currentPage++;
+    loadUsers(false, false);
     });
-
-
-showLessBtn.addEventListener("click", function(){
-
-        visibleUsers -=3  ;
-        if(visibleUsers < 6){
-            visibleUsers = 6;
-        }
-        displayUsers();
-    });
-
 
 companyFilters.forEach(function(checkbox){
-    checkbox.addEventListener("change", function(){
-        visibleUsers = 6;
-        displayUsers();
+     checkbox.addEventListener("change", function() {
+
+        companyFilters.forEach(function(otherCheckbox) {
+            if (otherCheckbox !== checkbox) {
+                otherCheckbox.checked = false;
+            }
+        });
+
+        if (checkbox.checked) {
+            selectedCompany = checkbox.value;
+        } else {
+            selectedCompany = "";
+        }
+
+        loadUsers(false, true);
     });
 });
+
 function showLogin() {
     loader.style.display = "none";
 
@@ -434,6 +538,7 @@ function showLogin() {
         loginPage.classList.remove("hidden");
     }
 }
+
 loginForm.addEventListener("submit", function(event) {
     event.preventDefault();
 
@@ -475,6 +580,16 @@ logoutBtn.addEventListener("click", function() {
     loginPassword.value = "";
 
     closeDetailsPanel();
+});
+
+themeToggleBtn.addEventListener("click", function() {
+    if (document.body.classList.contains("dark-mode")) {
+        localStorage.setItem("theme", "light");
+        applyTheme("light");
+    } else {
+        localStorage.setItem("theme", "dark");
+        applyTheme("dark");
+    }
 });
 
 setTimeout(showLogin, 1200);

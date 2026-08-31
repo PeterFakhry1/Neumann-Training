@@ -36,16 +36,47 @@ def home():
 
 @app.route("/users")
 def get_users():
+    page = request.args.get("page", default=1, type=int)
+    limit = request.args.get("limit", default=6, type=int)
+    company = request.args.get("company", default="", type=str)
+
+    offset = (page - 1) * limit
+
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM users")
+    if company:
+        cursor.execute(
+            "SELECT COUNT(*) AS total FROM users WHERE company = %s",
+            (company,)
+        )
+        total = cursor.fetchone()["total"]
+
+        cursor.execute(
+            "SELECT * FROM users WHERE company = %s LIMIT %s OFFSET %s",
+            (company, limit, offset)
+        )
+    else:
+        cursor.execute("SELECT COUNT(*) AS total FROM users")
+        total = cursor.fetchone()["total"]
+
+        cursor.execute(
+            "SELECT * FROM users LIMIT %s OFFSET %s",
+            (limit, offset)
+        )
+
     users = cursor.fetchall()
 
     cursor.close()
     connection.close()
 
-    return jsonify(users)
+    return jsonify({
+        "users": users,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "company": company
+    })
 
 
 @app.route("/users/<int:user_id>", methods=["Delete"])

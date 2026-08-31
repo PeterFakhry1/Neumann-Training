@@ -19,11 +19,11 @@ body {
 
 .logo {
     color: #8bc447;
-    font-size: 40px;
+    font-size: 32px;
 }
 
 header {
-    padding: 20px 50px;
+    padding: 4px 50px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     right: 0;
     left: 0;
@@ -39,6 +39,12 @@ header {
     align-items: center;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 nav a {
  /*   margin-left: 15px;*/
     text-decoration: none;
@@ -46,11 +52,20 @@ nav a {
     
 }
 
+.nav-menu {
+     display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.nav-menu a:hover {
+color:   #76a938;
+}
+
 main {
     display: flex;
     padding: 30px;
     gap: 25px;
-    margin-top: 160px;
+    margin-top: 105px;
     align-items: flex-start;
 }
 .users-area{
@@ -74,6 +89,7 @@ main {
     cursor: pointer;
     overflow: hidden;
     display: flex;
+    gap: 12px;
 }
 
 .user-card:hover {
@@ -111,7 +127,7 @@ main {
 
 .details-panel.open {
     
-    height: 600px;
+    height: 100%;
     padding: 20px;
     border-left: 8px solid;
 }
@@ -158,9 +174,13 @@ main {
     font-family: "Mulish", sans-serif;
 }
 .user-photo {
-width: 175px;
-height: 200px;
-background-color: #eeeeee;
+width: 170px;
+height: 190px;
+background-color: transparent;
+color: #222222;
+padding: 10px;
+object-fit: cover;
+box-sizing: border-box;
 }
 
 @media(max-width: 768px){
@@ -243,27 +263,15 @@ background-color: #eeeeee;
 .show-more-btn {
     margin-top: 30px;
     border: none;
-    background: white;
+    background: rgb(243, 243, 243);
     color: #747474;
     cursor: pointer;
     font-family: "Mulish", sans-serif;
-    font-size: 14px;
+    font-size: 18px;
 }
 
 .show-more-btn:hover {
     color: #76a938;
-}
-.show-less-btn{
- border: none;
-    background: white;
-    color: #747474;
-    cursor: pointer;
-    font-family: "Mulish", sans-serif;
-    font-size: 14px;
-    margin-top: 30px;
-}
-.show-less-btn:hover{
-      color: #76a938;
 }
 
 .filter-area {
@@ -388,4 +396,84 @@ input[type="color"]::-webkit-color-swatch {
 
 .logout-btn:hover {
     background-color: #3f4d70;
+}
+
+.theme-toggle-btn {
+    padding: 10px 18px;
+    border: none;
+    background-color: #eeeeee;
+    color: #52628c;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: "Mulish", sans-serif;
+}
+
+.theme-toggle-btn:hover {
+    background-color: #dddddd;
+}
+
+
+
+body.dark-mode {
+    background-color: #202020ef;
+    color: #dddddd;
+}
+
+body.dark-mode header {
+    background-color: #222222;
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .user-card,
+body.dark-mode .details-panel,
+body.dark-mode .filter-area,
+body.dark-mode .login-box {
+    background-color: #252525;
+    color: #dddddd;
+}
+
+body.dark-mode .user-info p,
+body.dark-mode .filter-area label {
+    color: #bbbbbb;
+}
+
+body.dark-mode nav a {
+    color: #dddddd;
+}
+
+body.dark-mode input,
+body.dark-mode select {
+    background-color: #333333;
+    color: #eeeeee;
+    border-color: #555555;
+}
+
+body.dark-mode .logout-btn {
+    background-color: #52628c;
+    color: white;
+}
+
+body.dark-mode .theme-toggle-btn {
+    background-color: #444444;
+    color: #eeeeee;
+}
+
+body.dark-mode .theme-toggle-btn:hover {
+    background-color: #555555;
+}
+
+body.dark-mode .show-more-btn{
+    background-color: #202020ef;
+    color: #dddddd
+}
+body.dark-mode .show-more-btn:hover{
+    color:  #76a938;
+}
+
+body.dark-mode .user-photo[src$=".svg"] {
+    filter: invert(1);
+}
+
+body.light-mode .user-photo[src$=".svg"] {
+    filter: invert(0);
 }
