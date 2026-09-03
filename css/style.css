@@ -85,7 +85,7 @@ main {
     background-color: white;
     box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
     position: relative;
-    padding: 0px;
+    padding-top: 0px; 
     cursor: pointer;
     overflow: hidden;
     display: flex;
@@ -99,6 +99,7 @@ main {
 .user-info h2 {
     font-size: 20px;
     font-weight: 400;
+    padding-top: 15px;
 }
 
 .user-info p {
@@ -184,11 +185,15 @@ box-sizing: border-box;
 }
 
 @media(max-width: 768px){
-    nav {
-        display: none;
-    }
     .menu-btn{
         display: block;
+        border: 1px solid #ccc;
+        background: transparent;
+        font-size: 26px;
+        cursor: pointer;
+        color: #52628c;
+        padding: 5px 10px;
+        border-radius: 4px;
     }
     .users-list{
             grid-template-columns: 1fr;
@@ -197,10 +202,66 @@ box-sizing: border-box;
         width: 100%;
     }
     .add-user-btn{
+        display: block;
+    }
+    .user-card {
+        height: 150px;
+        gap: 15px;
+    }
+     .user-photo {
+        width: 120px;
+        height: 140px;
+        object-fit: cover;
+        padding: 8px;
+    }
+    .user-info {
+        flex: 1;
+        min-width: 0;
+    }   
+    .user-info h2 {
+        max-width: 120px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }  
+    .user-info p {
+        max-width: 120px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .nav-menu,
+    .header-actions {
         display: none;
     }
+    .mobile-menu {
+        display: none;
+        flex-direction: column;
+        gap: 12px;
+        padding: 15px 20px;
+        background-color: white;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+     .mobile-menu.open {
+        display: flex;
+    }
 
-}
+    .mobile-menu a {
+        text-decoration: none;
+        color: #52628c;
+        font-size: 15px;
+    }
+      body.dark-mode .mobile-menu {
+        background-color: #222222;
+    }
+
+    body.dark-mode .mobile-menu a,
+    body.dark-mode .menu-btn {
+        color: #dddddd;
+    }
+
+
+}  
 .delete-user-btn{
     color: #bb0404;
     border-color: #bb0404;
@@ -412,6 +473,9 @@ input[type="color"]::-webkit-color-swatch {
     background-color: #dddddd;
 }
 
+.mobile-menu {
+    display: none;
+}
 
 
 body.dark-mode {
@@ -476,4 +540,13 @@ body.dark-mode .user-photo[src$=".svg"] {
 
 body.light-mode .user-photo[src$=".svg"] {
     filter: invert(0);
+}
+
+body.dark-mode #login-page {
+    background-color: #181818;
+}
+
+body.dark-mode .login-box {
+    background-color: #252525;
+    color: #dddddd;
 }

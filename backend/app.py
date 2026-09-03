@@ -38,23 +38,25 @@ def home():
 def get_users():
     page = request.args.get("page", default=1, type=int)
     limit = request.args.get("limit", default=6, type=int)
-    company = request.args.get("company", default="", type=str)
+    companies = request.args.getlist("company")
 
     offset = (page - 1) * limit
 
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
 
-    if company:
+    if companies:
+        placeholders = ", ".join(["%s"] * len(companies))
+
         cursor.execute(
-            "SELECT COUNT(*) AS total FROM users WHERE company = %s",
-            (company,)
+            f"SELECT COUNT(*) AS total FROM users WHERE company IN ({placeholders})",
+            companies
         )
         total = cursor.fetchone()["total"]
 
         cursor.execute(
-            "SELECT * FROM users WHERE company = %s LIMIT %s OFFSET %s",
-            (company, limit, offset)
+            f"SELECT * FROM users WHERE company IN ({placeholders}) LIMIT %s OFFSET %s",
+            companies + [limit, offset]
         )
     else:
         cursor.execute("SELECT COUNT(*) AS total FROM users")
@@ -75,7 +77,7 @@ def get_users():
         "total": total,
         "page": page,
         "limit": limit,
-        "company": company
+        "companies": companies
     })
 
 

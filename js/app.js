@@ -2,7 +2,7 @@ let users = [];
 let currentPage = 1;
 let usersPerPage = 6;
 let totalUsers = 0;
-let selectedCompany = "";
+let selectedCompanies = [];
 
     const loader = document.getElementById("loader");
     const app = document.getElementById("app");
@@ -22,6 +22,10 @@ let selectedCompany = "";
     const rememberMe = document.getElementById("remember-me");
     const logoutBtn = document.getElementById("logout-btn");
     const themeToggleBtn = document.getElementById("theme-toggle-btn");
+    const mobileMenu = document.getElementById("mobile-menu");
+    const mobileAddUserBtn = document.getElementById("mobile-add-user-btn");
+    const mobileLogoutBtn = document.getElementById("mobile-logout-btn");
+    const mobileThemeToggleBtn = document.getElementById("mobile-theme-toggle-btn");
 
 
 function showMessage(message, type = "info") {
@@ -69,8 +73,12 @@ function applyTheme(theme) {
 
     if (theme === "dark") {
         themeToggleBtn.textContent = "Light Mode";
+        if (mobileThemeToggleBtn) {
+            mobileThemeToggleBtn.textContent = "Light Mode";
+        }
     } else {
         themeToggleBtn.textContent = "Dark Mode";
+        mobileThemeToggleBtn.textContent = "Dark Mode";
     }
 }
 
@@ -98,8 +106,17 @@ function loadUsers(showAfterLoad = false, reset = true) {
         users = [];
     }
 
+    const params = new URLSearchParams();
+
+    params.append("page", currentPage);
+    params.append("limit", usersPerPage);
+
+    selectedCompanies.forEach(function(company) {
+    params.append("company", company);
+    });
+
     $.ajax({
-        url: `http://127.0.0.1:5000/users?page=${currentPage}&limit=${usersPerPage}&company=${selectedCompany}`,
+        url: `http://127.0.0.1:5000/users?${params.toString()}`,
         method: "GET",
         dataType: "json",
 
@@ -501,7 +518,7 @@ function closeDetailsPanel(){
 closeDetails.addEventListener("click", closeDetailsPanel);
 
 openMenu.addEventListener("click", function(){
-    //i will add later
+     mobileMenu.classList.toggle("open");
 });
 
 showMoreBtn.addEventListener("click", function(){
@@ -509,20 +526,30 @@ showMoreBtn.addEventListener("click", function(){
     loadUsers(false, false);
     });
 
+mobileAddUserBtn.addEventListener("click", function() {
+    mobileMenu.classList.remove("open");
+    openAddUserForm();
+});
+
+mobileLogoutBtn.addEventListener("click", function() {
+    mobileMenu.classList.remove("open");
+    logoutBtn.click();
+});
+
+mobileThemeToggleBtn.addEventListener("click", function() {
+    themeToggleBtn.click();
+});
+
 companyFilters.forEach(function(checkbox){
      checkbox.addEventListener("change", function() {
 
-        companyFilters.forEach(function(otherCheckbox) {
-            if (otherCheckbox !== checkbox) {
-                otherCheckbox.checked = false;
+        selectedCompanies = [];
+
+        companyFilters.forEach(function(box) {
+            if (box.checked) {
+                selectedCompanies.push(box.value);
             }
         });
-
-        if (checkbox.checked) {
-            selectedCompany = checkbox.value;
-        } else {
-            selectedCompany = "";
-        }
 
         loadUsers(false, true);
     });
